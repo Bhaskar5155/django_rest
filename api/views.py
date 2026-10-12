@@ -7,8 +7,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
-from rest_framework import mixins,generics
+from rest_framework import mixins,generics,viewsets
 
+from rest_framework.generics import *
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 # manual serialiser here
 # def studentsView(request):
@@ -18,7 +21,7 @@ from rest_framework import mixins,generics
 #     return JsonResponse(students_list,safe=False)
 
 
-
+#  function based views ----------------------
 @api_view(['GET','POST'])
 def studentsView(request):
     if request.method=='GET':
@@ -54,7 +57,7 @@ def studentsDetailView(request,pk):
         return Response(status.HTTP_204_NO_CONTENT)
 
 
-# APIView type
+# APIView type ----------------------
 
 # class Employees(APIView):
 #     def get(self,request):
@@ -101,27 +104,96 @@ def studentsDetailView(request,pk):
 
 
 
-# Mixins 
+# Mixins ----------------------
 
-class Employees(mixins.ListModelMixin,mixins.CreateModelMixin ,generics.GenericAPIView):
+# class Employees(mixins.ListModelMixin,mixins.CreateModelMixin ,generics.GenericAPIView):
+#     queryset=Employee.objects.all()
+#     serializer_class=EmployeeSerializer
+
+#     def get(self,request):
+#         return self.list(request)
+
+#     def post(self,request):
+#         return self.create(request)
+
+# class EmployeesDetail(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin ,generics.GenericAPIView):
+#     queryset=Employee.objects.all()
+#     serializer_class=EmployeeSerializer
+
+#     def get(self, request,pk):
+#         return self.retrieve(request,pk)
+
+#     def put(self,request,pk):
+#         return self.update(request,pk)
+
+#     def delete(self,request,pk):
+#         return self.destroy(request,pk)
+
+
+
+# generics ----------------------
+
+
+# class Employees(generics.ListCreateAPIView):
+#     queryset=Employee.objects.all()
+#     serializer_class=EmployeeSerializer
+
+
+
+# class EmployeesDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset=Employee.objects.all()
+#     serializer_class=EmployeeSerializer
+#     lookup_field='pk'
+
+# class Employees(ListCreateAPIView):
+#     queryset=Employee.objects.all()
+#     serializer_class=EmployeeSerializer
+
+
+# class EmployeesDetail(RetrieveUpdateDestroyAPIView):
+#     queryset=Employee.objects.all()
+#     serializer_class=EmployeeSerializer
+#     lookup_field='pk'
+
+
+# Viewset from viewsets ----------------------
+
+# class EmployeesViewset(viewsets.ViewSet):
+#     def list(self,request):
+#         queryset=Employee.objects.all()
+#         serializer_class=EmployeeSerializer(queryset,many=True)
+#         return Response(serializer_class.data)
+#     def create(self,request):
+#         serializer_class=EmployeeSerializer(data=request.data)
+#         if serializer_class.is_valid():
+#             serializer_class.save()
+#             return Response(serializer_class.data)
+#         return Response(serializer_class.errors)
+#     def retrieve(self,request,pk):
+#         QuerySet=get_object_or_404(Employee,pk=pk)
+#         serializer_class=EmployeeSerializer(QuerySet)
+#         return Response(serializer_class.data)
+#     def update(self,request,pk):
+#         queryset=get_object_or_404(Employee,pk=pk)
+#         serializer_class=EmployeeSerializer(queryset,data=request.data)
+#         if serializer_class.is_valid():
+#             serializer_class.save()
+#             return Response(serializer_class.data)
+#         return Response(serializer_class.errors)
+#     def delete(self,request,pk):
+#         queryset=get_object_or_404(Employee,pk=pk)
+#         queryset.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+#  ModelViewSet -------------------------
+
+class EmployeesViewset(viewsets.ModelViewSet):
     queryset=Employee.objects.all()
     serializer_class=EmployeeSerializer
-
-    def get(self,request):
-        return self.list(request)
-
-    def post(self,request):
-        return self.create(request)
-
-class EmployeesDetail(mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin ,generics.GenericAPIView):
-    queryset=Employee.objects.all()
-    serializer_class=EmployeeSerializer
-
-    def get(self, request,pk):
-        return self.retrieve(request,pk)
-
-    def put(self,request,pk):
-        return self.update(request,pk)
-
-    def delete(self,request,pk):
-        return self.destroy(request,pk)
+    filterset_fields=['designation']
+    filter_backends=[SearchFilter,DjangoFilterBackend]
+    search_fields=['emp_name']
+    
